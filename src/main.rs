@@ -1,6 +1,7 @@
 use std::env;
 
 fn main() {
+    println!("Hooky - v{}", env!("CARGO_PKG_VERSION"));
     let args: Vec<String> = env::args().collect();
 
     if args.len() < 2 {
