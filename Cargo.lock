@@ -3,5 +3,5 @@
 version = 3
 
 [[package]]
-name = "pre-commit"
+name = "hooky-cli"
 version = "0.1.0"

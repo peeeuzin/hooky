@@ -1,6 +1,7 @@
 use std::env;
 use std::fs;
 use std::io::prelude::*;
+use std::os::unix::prelude::OpenOptionsExt;
 use std::path;
 use std::process::Command;
 
@@ -22,10 +23,12 @@ fn run_command(command: &str) {
 }
 
 fn init() {
-    let pre_commit_dir = path::Path::new(".pre-commit");
+    let pre_commit_dir = path::Path::new(".hooky");
 
     if !path::Path::new(".git").exists() {
-        panic!("git cannot be found");
+        println!("[error] git cannot be found");
+
+        return;
     }
 
     Command::new("git")
@@ -35,20 +38,30 @@ fn init() {
         .spawn()
         .expect("Failed to set hooks path");
 
-    fs::create_dir_all(pre_commit_dir).expect("Failed to create .pre-commit directory");
+    println!("[info] Hooks path set to .hooky directory");
 
-    let mut file = fs::File::create(pre_commit_dir.join("pre-commit"))
+    fs::create_dir_all(pre_commit_dir).expect("Failed to create .hooky directory");
+
+    let mut file = fs::OpenOptions::new()
+        .create(true)
+        .write(true)
+        .mode(0o755)
+        .open(pre_commit_dir.join("pre-commit"))
         .expect("Failed to create pre-commit file");
 
     file.write_all(b"#!/usr/bin/env sh\n# Run pre-commit hooks\n\nexit 0")
         .expect("Failed to write to pre-commit file");
+
+    println!("[info] Created pre-commit file");
 }
 
 fn uninstall() {
-    let pre_commit_dir = path::Path::new(".pre-commit");
+    let pre_commit_dir = path::Path::new(".hooky");
 
     if !path::Path::new(".git").exists() {
-        panic!("git cannot be found");
+        println!("[error] git cannot be found");
+
+        return;
     }
 
     Command::new("git")
@@ -58,5 +71,7 @@ fn uninstall() {
         .spawn()
         .expect("Failed to unset hooks path");
 
-    fs::remove_dir_all(pre_commit_dir).expect("Failed to remove .pre-commit directory");
+    fs::remove_dir_all(pre_commit_dir).expect("Failed to remove .hooky directory");
+
+    println!("[info] Uninstalled hooky");
 }
