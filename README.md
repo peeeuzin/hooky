@@ -9,7 +9,7 @@ Git hooks helper made in Rust
 
 # Installation
 ```bash
-cargo install hooky-cli
+cargo install hooky-rs
 ```
 
 # Usage

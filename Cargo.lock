@@ -3,5 +3,5 @@
 version = 3
 
 [[package]]
-name = "hooky-cli"
+name = "hooky-rs"
 version = "1.0.0"
