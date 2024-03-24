@@ -2,6 +2,9 @@
 name = "hooky-cli"
 version = "0.1.0"
 edition = "2021"
+license = "MIT"
+authors = ["peeeuzin <contato.pedrinfx@gmail>"]
+description = "Git hooks helper made in Rust"
 
 [[bin]]
 name = "hooky"
