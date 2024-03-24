@@ -40,7 +40,7 @@ The library usage is made for Rust projects, to bind the hooks automatically.
 To use Hooky as a library, add the following to your `Cargo.toml`:
 ```toml
 [build-dependencies]
-hooky = "*"
+hooky-rs = "*"
 ```
 
 Add `src/build.rs`:
