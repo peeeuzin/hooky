@@ -1,0 +1,13 @@
+#!/usr/bin/env sh
+# Run pre-commit hooks
+
+cargo install --path . --quiet
+
+# Tests
+sh ./tests/init-test.sh
+sh ./tests/add-test.sh
+sh ./tests/uninstall-test.sh
+
+cargo uninstall
+
+exit 0

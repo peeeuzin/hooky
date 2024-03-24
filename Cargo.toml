@@ -10,4 +10,8 @@ description = "Git hooks helper made in Rust"
 name = "hooky"
 path = "src/main.rs"
 
+[lib]
+name = "hooky"
+path = "src/lib.rs"
+
 [dependencies]
