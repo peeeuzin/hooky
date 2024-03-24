@@ -12,9 +12,9 @@ Git hooks helper made in Rust
 cargo install hooky-rs
 ```
 
-# Usage
+# CLI usage
 
-## Initialize
+## Initialize Hooky
 To initialize the hooks, run the following command:
 ```bash
 hooky init
@@ -32,4 +32,21 @@ hooky add <hook-name>
 To uninstall Hooky, run the following command:
 ```bash
 hooky uninstall
+```
+
+# Library usage
+The library usage is made for Rust projects, to bind the hooks automatically.
+
+To use Hooky as a library, add the following to your `Cargo.toml`:
+```toml
+[dependencies]
+hooky = "*"
+```
+
+Add `src/build.rs`:
+```rust
+fn main() {
+    // Initialize Hooky without pre-commit hook
+    hooky::init(false);
+}
 ```
