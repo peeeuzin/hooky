@@ -1,9 +1,14 @@
 use std::env;
 use std::fs;
 use std::io::prelude::*;
-use std::os::unix::prelude::OpenOptionsExt;
 use std::path;
 use std::process::Command;
+
+#[cfg(target_family = "unix")]
+use std::os::unix::prelude::OpenOptionsExt;
+
+#[cfg(target_family = "windows")]
+use std::os::windows::fs::OpenOptionsExt;
 
 const ALLOWED_HOOKS: [&str; 13] = [
     "applypatch-msg",
@@ -67,12 +72,7 @@ fn init(no_pre_commit: bool) {
     fs::create_dir_all(pre_commit_dir).expect("Failed to create .hooky directory");
 
     if !no_pre_commit {
-        let mut file = fs::OpenOptions::new()
-            .create(true)
-            .write(true)
-            .mode(0o755)
-            .open(pre_commit_dir.join("pre-commit"))
-            .expect("Failed to create pre-commit file");
+        let mut file = create_file(pre_commit_dir.join("pre-commit"));
 
         file.write_all(b"#!/usr/bin/env sh\n# Run pre-commit hooks\n\nexit 0")
             .expect("Failed to write to pre-commit file");
@@ -129,13 +129,7 @@ fn add_hook(hook: &str) {
 
         return;
     }
-
-    let mut file = fs::OpenOptions::new()
-        .create(true)
-        .write(true)
-        .mode(0o755)
-        .open(pre_commit_dir.join(hook))
-        .expect("Failed to create hook file");
+    let mut file = create_file(pre_commit_dir.join(hook));
 
     let hook_content = format!("#!/usr/bin/env sh\n# Run {} hook\n\nexit 0", hook);
     file.write_all(hook_content.as_bytes())
@@ -148,4 +142,25 @@ fn help() {
     println!("hooky init - Initialize hooky. Optionally pass --no-pre-commit to skip creating a pre-commit hook");
     println!("hooky uninstall - Uninstall hooky");
     println!("hooky add <hook> - Add a hook");
+}
+
+fn create_file<P>(path: P) -> fs::File
+where
+    P: AsRef<path::Path>,
+{
+    let mut options = fs::OpenOptions::new();
+
+    options.create(true).write(true);
+
+    #[cfg(target_family = "windows")]
+    {
+        options.access_mode(0o755);
+    }
+
+    #[cfg(target_family = "unix")]
+    {
+        options.mode(0o755);
+    }
+
+    options.open(path).expect("Failed to create file")
 }
