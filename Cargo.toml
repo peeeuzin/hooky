@@ -5,6 +5,7 @@ edition = "2021"
 license = "MIT"
 authors = ["peeeuzin <contato.pedrinfx@gmail>"]
 description = "Git hooks helper made in Rust"
+build = "./src/build.rs"
 
 [[bin]]
 name = "hooky"

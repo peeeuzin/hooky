@@ -37,6 +37,7 @@ pub struct Hooky {
     logs: Logs,
 }
 
+#[allow(dead_code)]
 impl Hooky {
     pub fn new(quiet_mode: bool) -> Self {
         let logs = Logs { quiet_mode };
