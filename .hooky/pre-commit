@@ -1,13 +1,14 @@
 #!/usr/bin/env sh
 # Run pre-commit hooks
 
-cargo install --path . --quiet
+cargo install --path . --quiet --root /tmp/hooky
+PATH="/tmp/hooky/bin:$PATH"
 
 # Tests
 sh ./tests/init-test.sh
 sh ./tests/add-test.sh
 sh ./tests/uninstall-test.sh
 
-cargo uninstall
+cargo uninstall --root /tmp/hooky --quiet
 
 exit 0
