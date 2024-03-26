@@ -1,4 +1,4 @@
-me=$(basename "$0")
+file=$(basename "$0")
 
 setup() {
     set -o errexit
@@ -10,10 +10,10 @@ setup() {
 }
 
 error() {
-    echo -e "$me: \e[0;31mERROR:\e[m $1"
+    echo -e "$file: \e[0;31mERROR:\e[m $1"
     exit 1
 }
 
 ok() {
-    echo -e "$me: \e[0;32mOK\e[m $1"
+    echo -e "$file: \e[0;32mOK\e[m $1"
 }

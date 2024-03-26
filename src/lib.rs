@@ -28,93 +28,111 @@ pub const ALLOWED_HOOKS: [&str; 13] = [
     "update",
 ];
 
-pub fn init(no_pre_commit: bool) {
-    let pre_commit_dir = path::Path::new(".hooky");
+pub fn initialize_build() {
+    let is_primary_package = option_env!("CARGO_PRIMARY_PACKAGE");
 
-    if !path::Path::new(".git").exists() {
-        Logs::error("git cannot be found");
-
+    if is_primary_package.is_none() {
         return;
     }
 
-    if !pre_commit_dir.exists() {
-        fs::create_dir_all(pre_commit_dir).expect("Failed to create .hooky directory");
+    let hooky = Hooky::new(true);
+    hooky.initialize(true);
+}
 
-        if !no_pre_commit {
-            let mut file = create_file(pre_commit_dir.join("pre-commit"));
+pub struct Hooky {
+    logs: Logs,
+}
 
-            file.write_all(b"#!/usr/bin/env sh\n# Run pre-commit hooks\n\nexit 0")
-                .expect("Failed to write to pre-commit file");
+impl Hooky {
+    pub fn new(quiet_mode: bool) -> Self {
+        let logs = Logs { quiet_mode };
 
-            Logs::info("created pre-commit file");
+        Self { logs }
+    }
+
+    pub fn initialize(&self, no_pre_commit: bool) {
+        let pre_commit_dir = path::Path::new(".hooky");
+
+        if !path::Path::new(".git").exists() {
+            self.logs.error("git cannot be found");
+
+            return;
         }
+
+        if !pre_commit_dir.exists() {
+            fs::create_dir_all(pre_commit_dir).expect("Failed to create .hooky directory");
+
+            if !no_pre_commit {
+                self.add_hook("pre-commit")
+            }
+        }
+
+        Command::new("git")
+            .arg("config")
+            .arg("core.hooksPath")
+            .arg(pre_commit_dir)
+            .spawn()
+            .expect("Failed to set hooks path");
+
+        self.logs.ok("hooks path set to .hooky directory");
     }
 
-    Command::new("git")
-        .arg("config")
-        .arg("core.hooksPath")
-        .arg(pre_commit_dir)
-        .spawn()
-        .expect("Failed to set hooks path");
+    pub fn uninstall(&self) {
+        let pre_commit_dir = path::Path::new(".hooky");
 
-    Logs::info("hooks path set to .hooky directory");
-}
+        if !path::Path::new(".git").exists() {
+            self.logs.error("git cannot be found");
 
-pub fn uninstall() {
-    let pre_commit_dir = path::Path::new(".hooky");
+            return;
+        }
 
-    if !path::Path::new(".git").exists() {
-        Logs::error("git cannot be found");
+        if !pre_commit_dir.exists() {
+            self.logs.error("hooky is not installed");
 
-        return;
+            return;
+        }
+
+        Command::new("git")
+            .arg("config")
+            .arg("--unset")
+            .arg("core.hooksPath")
+            .spawn()
+            .expect("Failed to unset hooks path");
+
+        fs::remove_dir_all(pre_commit_dir).expect("Failed to remove .hooky directory");
+
+        self.logs.ok("uninstalled hooky");
     }
 
-    if !pre_commit_dir.exists() {
-        Logs::error("hooky is not installed");
+    pub fn add_hook(&self, hook: &str) {
+        if !ALLOWED_HOOKS.contains(&hook) {
+            self.logs.error("hook not allowed");
 
-        return;
+            return;
+        }
+
+        let pre_commit_dir = path::Path::new(".hooky");
+
+        if !pre_commit_dir.exists() {
+            self.logs.error(".hooky directory not found");
+            self.logs.info("try running `hooky init` first");
+
+            return;
+        }
+
+        if !path::Path::new(".git").exists() {
+            self.logs.error("git cannot be found");
+
+            return;
+        }
+        let mut file = create_file(pre_commit_dir.join(hook));
+
+        let hook_content = hook_file_placeholder(hook);
+        file.write_all(hook_content.as_bytes())
+            .expect("Failed to write to hook file");
+
+        self.logs.ok("created hook file");
     }
-
-    Command::new("git")
-        .arg("config")
-        .arg("--unset")
-        .arg("core.hooksPath")
-        .spawn()
-        .expect("Failed to unset hooks path");
-
-    fs::remove_dir_all(pre_commit_dir).expect("Failed to remove .hooky directory");
-
-    Logs::info("uninstalled hooky");
-}
-
-pub fn add_hook(hook: &str) {
-    if !ALLOWED_HOOKS.contains(&hook) {
-        Logs::error("hook not allowed");
-
-        return;
-    }
-
-    let pre_commit_dir = path::Path::new(".hooky");
-
-    if !pre_commit_dir.exists() {
-        Logs::error(".hooky directory not found");
-        Logs::info("try running `hooky init` first");
-
-        return;
-    }
-
-    if !path::Path::new(".git").exists() {
-        Logs::error("git cannot be found");
-
-        return;
-    }
-    let mut file = create_file(pre_commit_dir.join(hook));
-
-    let hook_content = format!("#!/usr/bin/env sh\n# Run {} hook\n\nexit 0", hook);
-    file.write_all(hook_content.as_bytes())
-        .expect("Failed to write to hook file");
-
-    Logs::info("created hook file");
 }
 
 fn create_file<P>(path: P) -> fs::File
@@ -136,4 +154,8 @@ where
     }
 
     options.open(path).expect("Failed to create file")
+}
+
+fn hook_file_placeholder(hook: &str) -> String {
+    format!("#!/usr/bin/env sh\n# Run {} hook\n\nexit 0", hook)
 }
