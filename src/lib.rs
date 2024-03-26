@@ -29,12 +29,6 @@ pub const ALLOWED_HOOKS: [&str; 13] = [
 ];
 
 pub fn initialize_build() {
-    let is_primary_package = option_env!("CARGO_PRIMARY_PACKAGE");
-
-    if is_primary_package.is_none() {
-        return;
-    }
-
     let hooky = Hooky::new(true);
     hooky.initialize(true);
 }

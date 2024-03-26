@@ -34,7 +34,7 @@ To uninstall Hooky, run the following command:
 hooky uninstall
 ```
 
-# Library usage
+# Library usage (Experimental)
 The library usage is made for Rust projects, to bind the hooks automatically.
 
 To use Hooky as a library, add the following to your `Cargo.toml`:
@@ -46,7 +46,7 @@ hooky-rs = "*"
 Add `src/build.rs`:
 ```rust
 fn main() {
-    // Initialize Hooky without pre-commit hook
-    hooky::init(false);
+    // Initialize Hooky
+    hooky::initialize_build();
 }
 ```
