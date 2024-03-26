@@ -4,9 +4,7 @@ pub struct Logs {
 
 impl Logs {
     pub fn error(&self, message: &str) {
-        if !self.quiet_mode {
-            eprintln!("\x1b[31m[Error]\x1b[0m {}", message);
-        }
+        eprintln!("\x1b[31m[Error]\x1b[0m {}", message);
     }
 
     pub fn info(&self, message: &str) {
